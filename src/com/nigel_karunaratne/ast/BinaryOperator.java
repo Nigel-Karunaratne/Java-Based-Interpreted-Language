@@ -2,7 +2,7 @@ package com.nigel_karunaratne.ast;
 
 import com.nigel_karunaratne.tokens.Token;
 
-public class BinaryOperator extends ASTNote {
+public class BinaryOperator extends ASTNode {
     public Token leftToken;
     public Token operatorToken;
     public Token rightToken;
