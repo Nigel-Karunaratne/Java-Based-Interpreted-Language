@@ -10,9 +10,9 @@ public class BinaryExpr extends Expr {
         this.right = right;
     }
 
-    final Expr left;
-    final Token operator;
-    final Expr right;
+    public final Expr left;
+    public final Token operator;
+    public final Expr right;
 
     @Override
     public <T> T accept(ExprVisitor<T> visitor) {
