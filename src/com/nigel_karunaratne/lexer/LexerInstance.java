@@ -1,11 +1,9 @@
 package com.nigel_karunaratne.lexer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-// import java.util.HashMap;
-import java.util.Map;
 
+import com.nigel_karunaratne.error_handler.ErrorHandler;
 import com.nigel_karunaratne.tokens.Token;
 import com.nigel_karunaratne.tokens.TokenType;
 
@@ -18,40 +16,44 @@ public class LexerInstance {
 
     // HashMap<String, TokenType> mws = Map.ofEntries();
 
-    //TODO - Convert to HashMaps
-    Map<String,TokenType> reservedMap = Map.ofEntries(
-        Map.entry("var", TokenType.VAR_DEC),
-        Map.entry("if", TokenType.IF),
-        Map.entry("else", TokenType.ELSE),
-        Map.entry("while", TokenType.WHILE),
-        Map.entry("return", TokenType.RETURN),
-        Map.entry("func", TokenType.FUNC),
-        Map.entry("true", TokenType.TRUE),
-        Map.entry("false", TokenType.FALSE)
-    );
+    final static HashMap<String,TokenType> reservedMap = new HashMap<>();
+    static {
+        reservedMap.put("var", TokenType.VAR_DEC);
+        reservedMap.put("if", TokenType.IF);
+        reservedMap.put("else", TokenType.ELSE);
+        reservedMap.put("while", TokenType.WHILE);
+        reservedMap.put("return", TokenType.RETURN);
+        reservedMap.put("func", TokenType.FUNC);
+        reservedMap.put("true", TokenType.TRUE);
+        reservedMap.put("false", TokenType.FALSE);
+        reservedMap.put("null", TokenType.NULL);
+    }
 
-    Map<String,TokenType> singleOperatorMap = Collections.unmodifiableMap(Map.ofEntries(
-        Map.entry("!", TokenType.NOT),
-        Map.entry("<", TokenType.LESS_THAN),
-        Map.entry(">", TokenType.GREATER_THAN),
-        Map.entry("=", TokenType.ASSIGN_VALUE),
-        Map.entry("+", TokenType.ADD),
-        Map.entry("-", TokenType.SUB),
-        Map.entry("/", TokenType.DIV),
-        Map.entry("*", TokenType.MUL),
-        Map.entry("%", TokenType.MOD)
-    ));
+    final static HashMap<String, TokenType> singleOperatorMap = new HashMap<>();
+    static {
+        singleOperatorMap.put("!", TokenType.NOT);
+        singleOperatorMap.put("<", TokenType.LESS_THAN);
+        singleOperatorMap.put(">", TokenType.GREATER_THAN);
+        singleOperatorMap.put("=", TokenType.ASSIGN_VALUE);
+        singleOperatorMap.put("+", TokenType.ADD);
+        singleOperatorMap.put("-", TokenType.MINUS);
+        singleOperatorMap.put("/", TokenType.DIV);
+        singleOperatorMap.put("*", TokenType.MUL);
+        singleOperatorMap.put("%", TokenType.MOD);
+    }
 
-    Map<String,TokenType> doubleOperatorMap = Collections.unmodifiableMap(Map.ofEntries(
-        Map.entry("==", TokenType.EQUALS),
-        Map.entry("<=", TokenType.LESS_THAN_EQUAL),
-        Map.entry(">=", TokenType.GREATER_THAN_EQUAL),
-        Map.entry("!=", TokenType.NOT_EQUAL),
-        Map.entry("||", TokenType.OR),
-        Map.entry("&&", TokenType.AND)
-    ));
+    
+    final static HashMap<String,TokenType> doubleOperatorMap = new HashMap<>();
+    static {
+        doubleOperatorMap.put("==", TokenType.EQUALS);
+        doubleOperatorMap.put("<=", TokenType.LESS_THAN_EQUAL);
+        doubleOperatorMap.put(">=", TokenType.GREATER_THAN_EQUAL);
+        doubleOperatorMap.put("!=", TokenType.NOT_EQUAL);
+        doubleOperatorMap.put("||", TokenType.OR);
+        doubleOperatorMap.put("&&", TokenType.AND);
+    }
 
-    public ArrayList<Token> tokens = new ArrayList<>();
+    private ArrayList<Token> tokens = new ArrayList<>();
 
     int line = 0;
     int column = 0;
@@ -59,13 +61,15 @@ public class LexerInstance {
     char[] input;
     char current;
 
+    public ArrayList<Token> getGeneratedTokens() {return tokens;}
+
     public void LexInput(String inputText) {
 
         line = 0;
         column = 0;
         input = inputText.toCharArray();
         currentInputIndex = 0;
-        tokens = new ArrayList<>();
+        tokens = new ArrayList<>(); //REVIEW - Estimate default size of list using size of input? Could reduce the amount of time spent resizing internal array?
 
         while(currentInputIndex < input.length) {
             current = getCurrent();
@@ -140,7 +144,7 @@ public class LexerInstance {
             }
         }
         //END OF WHILE
-        int x = 1;
+        ErrorHandler.DebugOutput("Lexer has finished.");
     }
     
     private char getCurrent() {
