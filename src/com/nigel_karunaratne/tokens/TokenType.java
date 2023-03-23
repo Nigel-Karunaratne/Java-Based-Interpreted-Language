@@ -1,6 +1,7 @@
 package com.nigel_karunaratne.tokens;
 
 public enum TokenType {
+    NULL,
     INT,
     FLOAT,
     STRING,
@@ -11,7 +12,7 @@ public enum TokenType {
     ASSIGN_VALUE,
 
     ADD,
-    SUB,
+    MINUS,
     MUL,
     DIV,
     MOD,
