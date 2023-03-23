@@ -1,14 +1,15 @@
 package com.nigel_karunaratne.expressions;
 
 public class GroupExpr extends Expr {
-    final Expr expression;
+    
+    public final Expr expression;
 
     public GroupExpr(Expr expression) {
         this.expression = expression;
     }
 
     @Override
-    <T> T accept(ExprVisitor<T> visitor) {
+    public <T> T accept(ExprVisitor<T> visitor) {
         return visitor.visitGroupExpr(this);
     }
 

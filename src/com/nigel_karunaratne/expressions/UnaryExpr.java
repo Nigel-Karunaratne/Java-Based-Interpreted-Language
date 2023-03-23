@@ -9,11 +9,11 @@ public class UnaryExpr extends Expr{
         this.expression = expression;
     }
 
-    final Token operator;
-    final Expr expression;
+    public final Token operator;
+    public final Expr expression;
 
     @Override
-    <T> T accept(ExprVisitor<T> visitor) {
+    public <T> T accept(ExprVisitor<T> visitor) {
         return visitor.visitUnaryExpr(this);
     }
     
