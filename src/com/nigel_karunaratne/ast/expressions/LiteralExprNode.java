@@ -1,6 +1,6 @@
 package com.nigel_karunaratne.ast.expressions;
 
-public class LiteralExprNode extends BaseExprNode {
+public class LiteralExprNode extends ExprNode {
 
     public final Object value;
 

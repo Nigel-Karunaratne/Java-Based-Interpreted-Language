@@ -1,10 +1,10 @@
 package com.nigel_karunaratne.ast.expressions;
 
-public class GroupExprNode extends BaseExprNode {
+public class GroupExprNode extends ExprNode {
     
-    public final BaseExprNode expression;
+    public final ExprNode expression;
 
-    public GroupExprNode(BaseExprNode expression) {
+    public GroupExprNode(ExprNode expression) {
         this.expression = expression;
     }
 

@@ -2,17 +2,17 @@ package com.nigel_karunaratne.ast.expressions;
 
 import com.nigel_karunaratne.tokens.Token;
 
-public class BinaryExprNode extends BaseExprNode {
+public class BinaryExprNode extends ExprNode {
 
-    public BinaryExprNode(BaseExprNode left, Token operator, BaseExprNode right) {
+    public BinaryExprNode(ExprNode left, Token operator, ExprNode right) {
         this.left = left;
         this.operator = operator;
         this.right = right;
     }
 
-    public final BaseExprNode left;
+    public final ExprNode left;
     public final Token operator;
-    public final BaseExprNode right;
+    public final ExprNode right;
 
     @Override
     public <T> T accept(ExprNodeVisitor<T> visitor) {
