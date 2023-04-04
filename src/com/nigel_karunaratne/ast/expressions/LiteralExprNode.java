@@ -1,14 +1,14 @@
-package com.nigel_karunaratne.expressions;
+package com.nigel_karunaratne.ast.expressions;
 
-public class LiteralExpr extends Expr {
+public class LiteralExprNode extends BaseExprNode {
 
     public final Object value;
 
-    public LiteralExpr(Object value) {
+    public LiteralExprNode(Object value) {
         this.value = value;
     }
 
-    public <T> T accept(ExprVisitor<T> visitor) {
+    public <T> T accept(ExprNodeVisitor<T> visitor) {
         return visitor.visitLiteralExpr(this);
     }
 

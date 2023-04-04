@@ -1,19 +1,19 @@
-package com.nigel_karunaratne.expressions;
+package com.nigel_karunaratne.ast.expressions;
 
 import com.nigel_karunaratne.tokens.Token;
 
-public class UnaryExpr extends Expr{
+public class UnaryExprNode extends BaseExprNode{
 
-    public UnaryExpr(Token operator, Expr expression) {
+    public UnaryExprNode(Token operator, BaseExprNode expression) {
         this.operator = operator;
         this.expression = expression;
     }
 
     public final Token operator;
-    public final Expr expression;
+    public final BaseExprNode expression;
 
     @Override
-    public <T> T accept(ExprVisitor<T> visitor) {
+    public <T> T accept(ExprNodeVisitor<T> visitor) {
         return visitor.visitUnaryExpr(this);
     }
     
