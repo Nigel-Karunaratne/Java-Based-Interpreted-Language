@@ -30,6 +30,8 @@ public enum TokenType {
     WHILE,
     RETURN,
     FUNC,
+
+    IDENTIFIER,
     
     TRUE,
     FALSE,
