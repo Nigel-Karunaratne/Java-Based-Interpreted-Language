@@ -180,13 +180,16 @@ public class Lexer {
     }
     
     private void handleVarOrKeyword() {
-        String returnVal = "" + current; //TODO - convert to substring method? string buffer / string builder
+        StringBuilder builder = new StringBuilder();
+        builder.append(current);
         while(peekNextExists() && (Character.isLetter(peekNext()) || Character.isDigit(peekNext()))) {
             setCurrentToNext();
-            returnVal += current;
+            // returnVal += current;
+            builder.append(current);
         }
 
         setCurrentToNextIfExists();
+        String returnVal = builder.toString();
         
         //Check if returnVal is in reserved
         // for (String string : reserved) {
@@ -206,10 +209,12 @@ public class Lexer {
 
         //NOTE - FOUND VARIABLE (add to symbol table?)
             System.out.print(returnVal + "|");
+        tokens.add(new Token(TokenType.IDENTIFIER, returnVal, line, column));
     }
     
     private void handleIntegerOrFloat() {
-        String returnVal = "" + current;
+        StringBuilder builder = new StringBuilder();
+        builder.append(current);
         boolean isFloat = false;
 
         // while(peekNextExists() && Character.isDigit(current)) {
@@ -221,7 +226,7 @@ public class Lexer {
 
         while(peekNextExists() && (Character.isDigit(peekNext()) || peekNext() == '.')) {
             setCurrentToNext();
-            returnVal += current;
+            builder.append(current);
             if(current == '.')
             {
                 if(!isFloat)
@@ -230,7 +235,7 @@ public class Lexer {
             }
         }
         //By now, current is the char after the number
-
+        String returnVal = builder.toString();
         if(isFloat) {
             //NOTE - FOUND FLOAT
                 System.out.print(returnVal + "|");
@@ -246,11 +251,12 @@ public class Lexer {
     }
 
     private void handleString() {
-        String returnVal = "";
+        StringBuilder builder = new StringBuilder();
+        // String returnVal = "";
         setCurrentToNext();
 
         while(current != '"') {
-            returnVal += "" + current;
+            builder.append(current);
             if(!peekNextExists()) {
                 //TODO - THROW ERROR
             }
@@ -259,6 +265,7 @@ public class Lexer {
 
         //The resulting string should not contain any quotation marks
 
+        String returnVal = builder.toString();
         //NOTE - FOUND STRING
             System.out.print(returnVal + "|");
         tokens.add(new Token(TokenType.STRING, returnVal, line, column));
