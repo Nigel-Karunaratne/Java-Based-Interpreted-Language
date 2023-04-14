@@ -1,11 +1,15 @@
 package com.nigel_karunaratne.parser;
 
+import java.beans.Statement;
 import java.util.ArrayList;
+import java.util.List;
+
 import com.nigel_karunaratne.tokens.Token;
 import com.nigel_karunaratne.tokens.TokenType;
+import com.nigel_karunaratne.ast.expressions.*;
+import com.nigel_karunaratne.ast.statements.*;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
 import com.nigel_karunaratne.error_handler.ParsingError;
-import com.nigel_karunaratne.expressions.*;
 
 //Takes in tokens and creates nodes / node trees.
 public class Parser {
@@ -20,102 +24,236 @@ public class Parser {
         positionInList = 0;
     }
 
-    public Expr parse() {
+
+    public List<StmtNode> parse() {
+        ArrayList<StmtNode> stmts = new ArrayList<>();
+
+        while(!isAtEndOfFile()) {
+            stmts.add(declaration());
+        }
+
+        return stmts;
+    }
+
+    //* declaration :	variableDecl | statement
+    private StmtNode declaration() {
         try {
-            return expression();
-        } catch (ParsingError error) {
+            if(matchTokenType(TokenType.VAR_DEC))
+                return variableDecl();
+            else
+                return statement();
+        } catch (ParsingError e) {
+            synchronizeState();
             return null;
         }
     }
 
-    //* expression :	equality
-    private Expr expression() {
-        return equality();
+    //* variableDecl :	"var" IDENTIFIER ( "=" expression )? ";"
+    private StmtNode variableDecl() {
+        Token variableName = consumeCurrentToken(TokenType.IDENTIFIER, "Variable needs a valid name");
+        ExprNode variableInitializer = null;
+        if(matchTokenType(TokenType.ASSIGN_VALUE))
+            variableInitializer = expression();
+        
+        consumeCurrentToken(TokenType.ENDLINE, "Variable declaration must end with ';'");
+        return new VarDeclarationStmtNode(variableName, variableInitializer);
+    }
+
+    //* statement :		exprStmt | blockStmt | ifStmt | whileStmt
+    private StmtNode statement() {
+        if(matchTokenType(TokenType.LBRACE)) {
+            return new BlockStmtNode(block());
+        }
+        if(matchTokenType(TokenType.IF)) {
+            return ifStmt();
+        }
+        if(matchTokenType(TokenType.WHILE)) {
+            return whileStmt();
+        }
+        return exprStatement();
+    }
+
+    private StmtNode ifStmt() {
+        consumeCurrentToken(TokenType.LPAREN, "Need a '(' after 'if'");
+        ExprNode condition = expression();
+        consumeCurrentToken(TokenType.RPAREN, "Need a ')' in an if statement");
+        StmtNode thenStmt = statement();
+        StmtNode elseStmt = null;
+
+        if(matchTokenType(TokenType.ELSE)) 
+            elseStmt = statement();
+
+        return new IfStmtNode(condition, thenStmt, elseStmt);
+    }
+
+    private StmtNode whileStmt() {
+        consumeCurrentToken(TokenType.LPAREN, "Need a '(' after 'while'");
+        ExprNode condition = expression();
+        consumeCurrentToken(TokenType.RPAREN, "Need a ')' in a while statement");
+
+        StmtNode bodyStmt = statement();
+
+        return new WhileStmtNode(condition, bodyStmt);
+    }
+
+    private List<StmtNode> block() {
+        List<StmtNode> contents = new ArrayList<>();
+        
+        while(!checkTokenType(TokenType.RBRACE) && !isAtEndOfFile()) {
+            contents.add(declaration());
+        }
+
+        consumeCurrentToken(TokenType.RBRACE, "Need a '}' to end a block");
+        return contents;
+    }
+
+    //* exprStmt :		expression ";"
+    private StmtNode exprStatement() {
+        ExprNode expr = expression();
+        consumeCurrentToken(TokenType.ENDLINE, "All statements must end with a ';'");
+        return new ExprStmtNode(expr);
+    }
+
+    //* logicOr :	    logicAnd ("||" logicAnd)*
+    private ExprNode logicOr() {
+        ExprNode expr = logicAnd();
+
+        while(matchTokenType(TokenType.OR)) {
+            Token opToken = getPreviousToken();
+            ExprNode right = logicAnd();
+
+            expr = new LogicalOpExprNode(expr, opToken, right);
+        }
+
+        return expr;
+    }
+
+    //* logicAnd :      equality ("&&" equality)*
+    private ExprNode logicAnd() {
+        ExprNode expr = equality();
+
+        while(matchTokenType(TokenType.AND)) {
+            Token opToken = getPreviousToken();
+            ExprNode right = equality();
+
+            expr = new LogicalOpExprNode(expr, opToken, right);
+        }
+
+        return expr;
+    }
+
+    //* expression :	assignment
+    private ExprNode expression() {
+        return assignment();
+    }
+
+    //* assignment :    IDENTIFIER "=" assignment | equality
+    private ExprNode assignment() {
+        ExprNode expr = logicOr();
+        if(matchTokenType(TokenType.ASSIGN_VALUE)) {
+            Token equalsToken = getPreviousToken();
+            ExprNode value = assignment();
+
+            if (expr instanceof VarAccessExprNode) {
+                Token name = ((VarAccessExprNode)expr).identifier;
+                return new VarAssignmentExprNode(name, value);
+            }
+
+            //TODO - report error using ErrorHandler
+            ErrorHandler.outputException(null, equalsToken.line, equalsToken.column);
+
+        }
+
+        return expr;
     }
 
     //* equality :		comparator ( ("!= | "==") comparator)*
-    private Expr equality() {
-        Expr activeExpression = comparator();
+    private ExprNode equality() {
+        ExprNode activeExpression = comparator();
 
         while(matchTokenType(TokenType.NOT_EQUAL, TokenType.EQUALS)) { //if we can make an == or != expression then make one
             Token operator = getPreviousToken();
-            Expr right = comparator();
+            ExprNode right = comparator();
 
-            activeExpression = new BinaryExpr(activeExpression, operator, right);
+            activeExpression = new BinaryExprNode(activeExpression, operator, right);
         }
 
         return activeExpression;
     }
 
     //* comparator :	term ( (">=" | "<=" | "<" | ">") term)*
-    private Expr comparator() {
-        Expr activeExpression = term();
+    private ExprNode comparator() {
+        ExprNode activeExpression = term();
         while(matchTokenType(TokenType.GREATER_THAN, TokenType.GREATER_THAN_EQUAL, TokenType.LESS_THAN, TokenType.LESS_THAN_EQUAL)) {
             Token operator = getPreviousToken();
-            Expr right = term();
+            ExprNode right = term();
 
-            activeExpression = new BinaryExpr(activeExpression, operator, right);
+            activeExpression = new BinaryExprNode(activeExpression, operator, right);
         }
 
         return activeExpression;
     }
 
     //* term :		factor ( ("+" | "-") factor)*
-    private Expr term() {
-        Expr activeExpression = factor();
+    private ExprNode term() {
+        ExprNode activeExpression = factor();
         while(matchTokenType(TokenType.ADD, TokenType.MINUS)) {
             Token operator = getPreviousToken();
-            Expr right = factor();
+            ExprNode right = factor();
 
-            activeExpression = new BinaryExpr(activeExpression, operator, right);
+            activeExpression = new BinaryExprNode(activeExpression, operator, right);
         }
 
         return activeExpression;
     }
 
     //* factor : 		unary ( ("/" | "*" | "%") unary)*
-    private Expr factor() {
-        Expr activeExpression = unary();
+    private ExprNode factor() {
+        ExprNode activeExpression = unary();
         while(matchTokenType(TokenType.DIV, TokenType.MUL, TokenType.MOD)) {
             Token operator = getPreviousToken();
-            Expr right = unary();
+            ExprNode right = unary();
 
-            activeExpression = new BinaryExpr(activeExpression, operator, right);
+            activeExpression = new BinaryExprNode(activeExpression, operator, right);
         }
 
         return activeExpression;
     }
 
     //* unary :		("!" | "-") unary | primary
-    private Expr unary() {
+    private ExprNode unary() {
         if(matchTokenType(TokenType.MINUS, TokenType.NOT)) {
             Token operator = getPreviousToken();
-            Expr right = unary();
+            ExprNode right = unary();
 
-            return new UnaryExpr(operator, right);
+            return new UnaryExprNode(operator, right);
         }
 
         return primary();
     }
 
-    //* primary :		INT | FLOAT | STR | "true" | "false" | "null" | "(" expression ")"
-    private Expr primary() {
+    //* primary :		INT | FLOAT | STR | "true" | "false" | "null" | "(" expression ")" | IDENTIFIER
+    private ExprNode primary() {
         if(matchTokenType(TokenType.INT, TokenType.FLOAT, TokenType.STRING))
-            return new LiteralExpr(getPreviousToken().value);
+            return new LiteralExprNode(getPreviousToken().value);
         
         if(matchTokenType(TokenType.FALSE))
-            return new LiteralExpr(false);
+            return new LiteralExprNode(false);
 
         if(matchTokenType(TokenType.TRUE))
-            return new LiteralExpr(true);
+            return new LiteralExprNode(true);
 
         if(matchTokenType(TokenType.NULL))
-            return new LiteralExpr(null);
+            return new LiteralExprNode(null);
 
         if(matchTokenType(TokenType.LPAREN)) {
-            Expr expression = expression();
+            ExprNode expression = expression();
             consumeCurrentToken(TokenType.RPAREN, "Expected ')', found none");
-            return new GroupExpr(expression);
+            return new GroupExprNode(expression);
+        }
+
+        if(matchTokenType(TokenType.IDENTIFIER)) {
+            return new VarAccessExprNode(getPreviousToken());
         }
 
         //Nothing found -> throw error
@@ -160,8 +298,21 @@ public class Parser {
         return false;
     }
 
+    //If the current token is one of the specified types, return true. Do NOT move the position forward
+    private boolean checkTokenType(TokenType... types) {
+        for (TokenType tokenType : types) {
+            if(isCurrentTypeEqualTo(tokenType)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //Only check for equality, does not advance forward
     private boolean isCurrentTypeEqualTo(TokenType typeToCheck) {
+        if(isAtEndOfFile())
+            return false;
         return getCurrentToken().type == typeToCheck;
     }
 
@@ -183,7 +334,7 @@ public class Parser {
     }
 
     private boolean isAtEndOfFile() {
-        return positionInList >= tokens.size(); //TODO - Check to see if this works
+        return getCurrentToken().type.equals(TokenType.EOF); //or position > size of list?
     }
 
     private Token consumeCurrentToken(TokenType type, String errorMessage) { //TODO - rename
@@ -195,7 +346,7 @@ public class Parser {
     }
 
     private ParsingError throwParsingError(Token currentToken, String errorMessage) {
-        ErrorHandler.OutputException(errorMessage, currentToken.line, currentToken.column);
+        ErrorHandler.outputException(errorMessage, currentToken.line, currentToken.column);
         return new ParsingError();
     }
 }
