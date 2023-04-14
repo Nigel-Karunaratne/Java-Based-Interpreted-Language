@@ -130,7 +130,7 @@ public class Lexer {
             }
 
             else if(current == '}') {
-                tokens.add(new Token(TokenType.RPAREN, '}', line, column));
+                tokens.add(new Token(TokenType.RBRACE, '}', line, column));
                     System.out.print("}|");
                 setCurrentToNextIfExists();
             }
@@ -145,7 +145,7 @@ public class Lexer {
         }
         //END OF WHILE
         tokens.add(new Token(TokenType.EOF, null, line+1, column)); //TODO - check
-        ErrorHandler.DebugOutput("Lexer has finished.");
+        ErrorHandler.debugOutput("Lexer has finished.");
     }
     
     private char getCurrent() {
