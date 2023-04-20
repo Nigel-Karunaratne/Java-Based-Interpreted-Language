@@ -3,6 +3,7 @@ package com.nigel_karunaratne.lexer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.nigel_karunaratne.App;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
 import com.nigel_karunaratne.tokens.Token;
 import com.nigel_karunaratne.tokens.TokenType;
@@ -113,25 +114,25 @@ public class Lexer {
 
             else if(current == '(') {
                 tokens.add(new Token(TokenType.LPAREN, '(', line, column));
-                    System.out.print("(|");
+                    //TODO - Cleanup System.out.print("(|");
                 setCurrentToNextIfExists();
             }
 
             else if(current == ')') {
                 tokens.add(new Token(TokenType.RPAREN, ')', line, column));
-                    System.out.print(")|");
+                    // System.out.print(")|");
                 setCurrentToNextIfExists();
             }
 
             else if(current == '{') {
                 tokens.add(new Token(TokenType.LBRACE, '{', line, column));
-                    System.out.print("{|");
+                    // System.out.print("{|");
                 setCurrentToNextIfExists();
             }
 
             else if(current == '}') {
                 tokens.add(new Token(TokenType.RBRACE, '}', line, column));
-                    System.out.print("}|");
+                    // System.out.print("}|");
                 setCurrentToNextIfExists();
             }
 
@@ -202,13 +203,13 @@ public class Lexer {
         // }
         if(reservedMap.containsKey(returnVal)) {
             //NOTE - FOUND KEYWORD
-                System.out.print(returnVal + "|");
+                // System.out.print(returnVal + "|");
             tokens.add(new Token(reservedMap.get(returnVal), returnVal, line, column));
             return;
         }
 
         //NOTE - FOUND VARIABLE (add to symbol table?)
-            System.out.print(returnVal + "|");
+            // System.out.print(returnVal + "|");
         tokens.add(new Token(TokenType.IDENTIFIER, returnVal, line, column));
     }
     
@@ -238,13 +239,13 @@ public class Lexer {
         String returnVal = builder.toString();
         if(isFloat) {
             //NOTE - FOUND FLOAT
-                System.out.print(returnVal + "|");
+                // System.out.print(returnVal + "|");
             tokens.add(new Token(TokenType.FLOAT, Float.parseFloat(returnVal), line, column));
                 
         }
         else {
             //NOTE - FOUND INTEGER
-                System.out.print(returnVal + "|");
+                // System.out.print(returnVal + "|");
             tokens.add(new Token(TokenType.INT, Integer.parseInt(returnVal), line, column));
         }
         setCurrentToNextIfExists();
@@ -267,7 +268,7 @@ public class Lexer {
 
         String returnVal = builder.toString();
         //NOTE - FOUND STRING
-            System.out.print(returnVal + "|");
+            // System.out.print(returnVal + "|");
         tokens.add(new Token(TokenType.STRING, returnVal, line, column));
 
             setCurrentToNextIfExists();
@@ -275,7 +276,7 @@ public class Lexer {
 
     private void handleSemicolon() {
         //NOTE - FOUND SEMICOLON
-            System.out.print(";" + "|");
+            // System.out.print(";" + "|");
         tokens.add(new Token(TokenType.ENDLINE, ';', line, column));
         setCurrentToNextIfExists();
     }
@@ -298,7 +299,7 @@ public class Lexer {
 
             if(doubleOperatorMap.containsKey(rval)) {
                 //NOTE - DOUBLE OPERATOR FOUND
-                    System.out.print(rval + "|");
+                    // System.out.print(rval + "|");
                 tokens.add(new Token(doubleOperatorMap.get(rval), rval, line, column));
                     
                 //Twice due to a double operator
@@ -321,7 +322,7 @@ public class Lexer {
 
         if(singleOperatorMap.containsKey("" + current)) {
             //NOTE - SINGLE OPERATOR FOUND
-                System.out.print("" + current + "|");
+                // System.out.print("" + current + "|");
             tokens.add(new Token(singleOperatorMap.get("" + current), "" + current, line, column));
                 
             setCurrentToNextIfExists();
@@ -331,5 +332,8 @@ public class Lexer {
 
         //If execution reaches here, we have encountered an invalid character. Throw Error
         //TODO - THROW ERROR
+        ErrorHandler.reportLexerError(line, column, "There's an invalid character.");
+        currentInputIndex = input.length + 1; //this is to make the while loop stop running
+        return;
     }
 }
