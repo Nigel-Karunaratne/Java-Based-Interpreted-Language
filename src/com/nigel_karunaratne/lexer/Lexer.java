@@ -3,7 +3,7 @@ package com.nigel_karunaratne.lexer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.nigel_karunaratne.App;
+import com.nigel_karunaratne.JBIL_Main;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
 import com.nigel_karunaratne.tokens.Token;
 import com.nigel_karunaratne.tokens.TokenType;

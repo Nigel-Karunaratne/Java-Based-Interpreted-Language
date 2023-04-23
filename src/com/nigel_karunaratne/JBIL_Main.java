@@ -1,6 +1,5 @@
 package com.nigel_karunaratne;
 
-import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,7 +15,7 @@ import com.nigel_karunaratne.parser.Parser;
 import com.nigel_karunaratne.tokens.Token;
 
 //* This is the entry point for the interpreter command line.
-public class App {
+public class JBIL_Main {
 
     //flags for REPL
     public static boolean hadError;

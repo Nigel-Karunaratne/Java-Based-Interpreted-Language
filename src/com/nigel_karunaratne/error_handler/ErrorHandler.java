@@ -1,6 +1,6 @@
 package com.nigel_karunaratne.error_handler;
 
-import com.nigel_karunaratne.App;
+import com.nigel_karunaratne.JBIL_Main;
 import com.nigel_karunaratne.tokens.Token;
 
 public final class ErrorHandler {
@@ -31,18 +31,18 @@ public final class ErrorHandler {
 
     public static RuntimeError throwRuntimeError(Token currentToken, String errorMessage) {
         ErrorHandler.outputException(errorMessage, currentToken.line, currentToken.column);
-        App.hadError = true;
+        JBIL_Main.hadError = true;
         return new RuntimeError();
     }
 
     public static void reportLexerError(int line, int col, String errorMessage) {
         //nothing needs to be thrown, just reported and aborted.
         ErrorHandler.outputException(errorMessage, line, col);
-        App.hadError = true;
+        JBIL_Main.hadError = true;
     }
 
     public static void reportResolverError(Token currentToken, String errorMessage) {
         ErrorHandler.outputException(errorMessage, currentToken.line, currentToken.column);
-        App.hadError = true;
+        JBIL_Main.hadError = true;
     }
 }

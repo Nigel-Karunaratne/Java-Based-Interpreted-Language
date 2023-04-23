@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.nigel_karunaratne.tokens.Token;
 import com.nigel_karunaratne.tokens.TokenType;
-import com.nigel_karunaratne.App;
+import com.nigel_karunaratne.JBIL_Main;
 import com.nigel_karunaratne.ast.expressions.*;
 import com.nigel_karunaratne.ast.statements.*;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
@@ -417,7 +417,7 @@ public class Parser {
 
     private ParsingError throwParsingError(Token currentToken, String errorMessage) {
         ErrorHandler.outputException(errorMessage, currentToken.line, currentToken.column);
-        App.hadError = true;
+        JBIL_Main.hadError = true;
         return new ParsingError();
     }
 }
