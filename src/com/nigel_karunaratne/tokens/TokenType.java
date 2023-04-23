@@ -3,7 +3,7 @@ package com.nigel_karunaratne.tokens;
 public enum TokenType {
     NULL,
     INT,
-    FLOAT,
+    DOUBLE,
     STRING,
 
     NOT,

@@ -151,7 +151,7 @@ public class Lexer {
         }
         //END OF WHILE
         tokens.add(new Token(TokenType.EOF, null, line+1, column)); //TODO - check
-        ErrorHandler.debugOutput("Lexer has finished.");
+        // ErrorHandler.debugOutput("Lexer has finished.");
     }
     
     private char getCurrent() {
@@ -237,7 +237,11 @@ public class Lexer {
             {
                 if(!isFloat)
                     isFloat = true;
-                else {} //TODO - THROW ERROR
+                else {
+                    ErrorHandler.reportLexerError(line, column, "Numbers cannot have multiple decimal points.");
+                    endLexerEarly();
+                    return;
+                }
             }
         }
         //By now, current is the char after the number
@@ -245,7 +249,7 @@ public class Lexer {
         if(isFloat) {
             //NOTE - FOUND FLOAT
                 // System.out.print(returnVal + "|");
-            tokens.add(new Token(TokenType.FLOAT, Float.parseFloat(returnVal), line, column));
+            tokens.add(new Token(TokenType.DOUBLE, Double.parseDouble(returnVal), line, column));
                 
         }
         else {
@@ -338,7 +342,12 @@ public class Lexer {
         //If execution reaches here, we have encountered an invalid character. Throw Error
         //TODO - THROW ERROR
         ErrorHandler.reportLexerError(line, column, "There's an invalid character.");
-        currentInputIndex = input.length + 1; //this is to make the while loop stop running
+        endLexerEarly();
         return;
+    }
+
+    //Ends the lexer by setting currentInputIndex to be larger than the length of the input, terminating the while loop.
+    private void endLexerEarly() {
+        currentInputIndex = input.length + 1;
     }
 }
