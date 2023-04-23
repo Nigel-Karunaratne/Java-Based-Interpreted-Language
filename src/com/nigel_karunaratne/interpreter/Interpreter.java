@@ -1,7 +1,9 @@
 package com.nigel_karunaratne.interpreter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.nigel_karunaratne.ast.expressions.*;
 import com.nigel_karunaratne.ast.functions.*;
@@ -17,6 +19,8 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
 
     public Environment globalsEnvironment = new Environment();
     private Environment baseEnvironment = globalsEnvironment; //TODO - remove this : new Environment();
+
+    private final Map<ExprNode, Integer> locals = new HashMap<>();
 
     //Used to define global functions
     public Interpreter() {
@@ -251,13 +255,22 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
 
     @Override
     public Object visitVarAccessExpr(VarAccessExprNode expr) {
-        return baseEnvironment.getValue(expr.identifier);
+        // return baseEnvironment.getValue(expr.identifier);
+        return lookUpVariable(expr.identifier, expr);
     }
 
     @Override
     public Object visitVarAssignExpr(VarAssignmentExprNode expr) {
         Object newValue = evaluateExpr(expr.value);
-        baseEnvironment.setValue(expr.name, newValue);
+        // baseEnvironment.setValue(expr.name, newValue);
+        Integer distance = locals.get(expr);
+        if(distance != null) {
+            baseEnvironment.setValueAt(distance, expr.name, newValue);
+        }
+        else {
+            globalsEnvironment.setValue(expr.name, newValue);
+        }
+
         return newValue;
     }
 
@@ -311,6 +324,20 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
     }
 
     //ANCHOR - Helper methods
+
+    public void resolve(ExprNode expr, int depth) {
+        locals.put(expr,depth);
+    }
+
+    private Object lookUpVariable(Token name, ExprNode expr) {
+        Integer distance = locals.get(expr);
+        if(distance != null) {
+            return baseEnvironment.getValueAt(distance, name.value.toString());
+        }
+        else {
+            return globalsEnvironment.getValue(name);
+        }
+    }
 
     private String returnStringVersion(Object o) {
         if(o instanceof Integer)

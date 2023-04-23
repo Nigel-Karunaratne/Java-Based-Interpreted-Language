@@ -40,4 +40,9 @@ public final class ErrorHandler {
         ErrorHandler.outputException(errorMessage, line, col);
         App.hadError = true;
     }
+
+    public static void reportResolverError(Token currentToken, String errorMessage) {
+        ErrorHandler.outputException(errorMessage, currentToken.line, currentToken.column);
+        App.hadError = true;
+    }
 }

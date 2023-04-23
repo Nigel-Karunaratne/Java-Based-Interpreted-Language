@@ -3,6 +3,7 @@ package com.nigel_karunaratne.environment;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.nigel_karunaratne.ast.expressions.ExprNode;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
 import com.nigel_karunaratne.tokens.Token;
 
@@ -26,6 +27,10 @@ public class Environment {
         values.put(name, value);
     }
 
+    public Object getValueAt(int distance, String name) {
+        return getAncestorEnvironment(distance).values.get(name);
+    }
+
     public Object getValue(Token name) {
         if(values.containsKey(name.value)) {
             return values.get(name.value);
@@ -36,6 +41,10 @@ public class Environment {
         }
 
         throw ErrorHandler.throwRuntimeError(name, "Identifier '" + name.value +"' hasn't been defined yet");
+    }
+
+    public void setValueAt(int distance, Token name, Object value) {
+        getAncestorEnvironment(distance).values.put(name.value.toString(), value);
     }
 
     public void setValue(Token identifierToken, Object newValue) {
@@ -50,5 +59,14 @@ public class Environment {
         }
 
         ErrorHandler.throwRuntimeError(identifierToken, "The variable '" + identifierToken.value.toString() + "' is undefined.");
+    }
+
+    private Environment getAncestorEnvironment(int distance) {
+        Environment environment = this;
+        for (int i = 0; i < distance; i++) {
+            environment = environment.parent;
+        }
+
+        return environment;
     }
 }
