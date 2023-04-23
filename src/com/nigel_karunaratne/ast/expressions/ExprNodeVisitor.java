@@ -8,4 +8,5 @@ public interface ExprNodeVisitor<T> {
     T visitVarAccessExpr(VarAccessExprNode expr);
     T visitVarAssignExpr(VarAssignmentExprNode expr);
     T visitLogicalOp(LogicalOpExprNode expr);
+    T visitCallFunExpr(CallFnExprNode expr);
 }

@@ -1,6 +1,5 @@
 package com.nigel_karunaratne.parser;
 
-import java.beans.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,17 +35,41 @@ public class Parser {
         return stmts;
     }
 
-    //* declaration :	variableDecl | statement
+    //* declaration :	fnDecl | variableDecl | statement
     private StmtNode declaration() {
         try {
             if(matchTokenType(TokenType.VAR_DEC))
                 return variableDecl();
+            if(matchTokenType(TokenType.FUNC))
+                return functionDecl();
             else
                 return statement();
         } catch (ParsingError e) {
             synchronizeState();
             return null;
         }
+    }
+
+    private StmtNode functionDecl() {
+        Token name = consumeCurrentToken(TokenType.IDENTIFIER, "Expected function name here.");
+        consumeCurrentToken(TokenType.LPAREN, "Expected '(' after function name declaration.");
+
+        List<Token> parameters = new ArrayList<>();
+        if(!checkTokenType(TokenType.RPAREN)) {
+            do {
+                if(parameters.size() >= 16)
+                    ErrorHandler.outputWarning("Cannot have more than 16 arguments in a function call.", getCurrentToken().line, getCurrentToken().column);
+
+                parameters.add(consumeCurrentToken(TokenType.IDENTIFIER, "Expected name of parameter."));
+            } while (matchTokenType(TokenType.COMMA));
+        }
+
+        consumeCurrentToken(TokenType.RPAREN, "Expected ')' after function paramters.");
+        consumeCurrentToken(TokenType.LBRACE, "Expected '{' before function body (body must be a block).");
+        
+        List<StmtNode> body = block();
+
+        return new FunctionDefStmtNode(name, parameters, body);
     }
 
     //* variableDecl :	"var" IDENTIFIER ( "=" expression )? ";"
@@ -70,6 +93,9 @@ public class Parser {
         }
         if(matchTokenType(TokenType.WHILE)) {
             return whileStmt();
+        }
+        if(matchTokenType(TokenType.RETURN)) {
+            return returnStmt();
         }
         return exprStatement();
     }
@@ -95,6 +121,18 @@ public class Parser {
         StmtNode bodyStmt = statement();
 
         return new WhileStmtNode(condition, bodyStmt);
+    }
+
+    private StmtNode returnStmt() {
+        Token returnKeyword = getPreviousToken();
+        ExprNode returnValue = null;
+        if(!checkTokenType(TokenType.ENDLINE)) {
+            returnValue = expression();
+        }
+
+        consumeCurrentToken(TokenType.ENDLINE, "Need a ';' after a return value.");
+
+        return new ReturnStmtNode(returnKeyword, returnValue);
     }
 
     private List<StmtNode> block() {
@@ -230,12 +268,43 @@ public class Parser {
             return new UnaryExprNode(operator, right);
         }
 
-        return primary();
+        return callFn();
+    }
+
+    private ExprNode callFn() {
+        ExprNode expr = primary();
+        while(true) {
+            if(matchTokenType(TokenType.LPAREN)) {
+                expr = finishBuildingCall(expr);
+            } 
+            else {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    private ExprNode finishBuildingCall(ExprNode expr) {
+        List<ExprNode> args = new ArrayList<>();
+        if(!checkTokenType(TokenType.RPAREN)) {
+            args.add(expression());
+            while(matchTokenType(TokenType.COMMA)) {
+                if(args.size() >= 16) {
+                    ErrorHandler.outputWarning("Cannot have more than 16 arguments in a function call.", getCurrentToken().line, getCurrentToken().column);
+                }
+                args.add(expression());
+            }
+        }
+
+        Token parenthesis = consumeCurrentToken(TokenType.RPAREN, "Need a ')' after arguments.");
+
+        return new CallFnExprNode(expr, parenthesis, args);
     }
 
     //* primary :		INT | FLOAT | STR | "true" | "false" | "null" | "(" expression ")" | IDENTIFIER
     private ExprNode primary() {
-        if(matchTokenType(TokenType.INT, TokenType.FLOAT, TokenType.STRING))
+        if(matchTokenType(TokenType.INT, TokenType.DOUBLE, TokenType.STRING))
             return new LiteralExprNode(getPreviousToken().value);
         
         if(matchTokenType(TokenType.FALSE))

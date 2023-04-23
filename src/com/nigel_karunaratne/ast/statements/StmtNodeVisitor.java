@@ -6,4 +6,6 @@ public interface StmtNodeVisitor<T> {
     T visitBlockStmt(BlockStmtNode stmt);
     T visitIfStmt(IfStmtNode stmt);
     T visitWhileStmt(WhileStmtNode stmt);
+    T visitFunctionDefStmt(FunctionDefStmtNode stmt);
+    T visitReturnStmt(ReturnStmtNode stmt);
 }
