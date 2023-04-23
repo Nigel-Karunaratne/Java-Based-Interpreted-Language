@@ -41,6 +41,8 @@ public enum TokenType {
     LBRACE,
     RBRACE,
 
+    COMMA,
+
     ENDLINE,
     EOF
 }

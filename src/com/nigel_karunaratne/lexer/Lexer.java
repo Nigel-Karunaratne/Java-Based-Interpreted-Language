@@ -140,6 +140,11 @@ public class Lexer {
                 handleSemicolon();
             }
 
+            else if (current == ',') {
+                tokens.add(new Token(TokenType.COMMA, ',', line, column));
+                setCurrentToNextIfExists();  
+            }
+
             else {
                 handleOperator();
             }
