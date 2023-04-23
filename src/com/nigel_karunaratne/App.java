@@ -1,18 +1,21 @@
 package com.nigel_karunaratne;
 
+import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
-import com.nigel_karunaratne.ast.expressions.ExprNode;
 import com.nigel_karunaratne.ast.statements.StmtNode;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
+import com.nigel_karunaratne.identifier_resolver.IdentifierResolver;
 import com.nigel_karunaratne.interpreter.Interpreter;
 import com.nigel_karunaratne.lexer.Lexer;
 import com.nigel_karunaratne.parser.Parser;
 import com.nigel_karunaratne.tokens.Token;
 
-//* This is the entry point for the interpreter command line. It is temporary
+//* This is the entry point for the interpreter command line.
 public class App {
 
     //flags for REPL
@@ -28,12 +31,32 @@ public class App {
 
         if(args.length >= 1) {
             //Interpret a single file
-            Lexer lexer = new Lexer();
-            lexer.LexInput(args[0]);
-            Parser parser = new Parser(lexer.getGeneratedTokens());
-            List<StmtNode> stmts = parser.parse();
-            interpreter.interpretStmtList(stmts);
-            ErrorHandler.debugOutput("Main App ended.");
+            // Lexer lexer = new Lexer();
+            // lexer.LexInput(args[0]);
+
+            // Parser parser = new Parser(lexer.getGeneratedTokens());
+            // List<StmtNode> stmts = parser.parse();
+
+            // VariableResolver resolver = new VariableResolver(interpreter);
+            // resolver.resolveAllStmts(stmts);
+
+            // interpreter.interpretStmtList(stmts);
+
+            hadError = false;
+
+            // File file = new File(args[0]);
+            if(!Files.exists(Paths.get(args[0]))) {
+                System.out.println("Error: File '" + args[0] + "' does not exist.");
+                System.exit(1);
+            }
+
+            byte[] fileBytes = Files.readAllBytes(Paths.get(args[0]));
+            runCycle(new String(fileBytes, Charset.defaultCharset()));
+
+            if(hadError) {
+                System.exit(1);
+            }
+
             System.exit(0);
             return;
         }
@@ -112,6 +135,11 @@ public class App {
 
         Parser parser = new Parser(tokens);
         ArrayList<StmtNode> stmts = parser.parse();
+        if(hadError)
+            return;
+
+        IdentifierResolver resolver = new IdentifierResolver(interpreter);
+        resolver.resolveAllStmts(stmts);
         if(hadError)
             return;
 
