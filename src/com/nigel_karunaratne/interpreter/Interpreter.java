@@ -1,8 +1,11 @@
 package com.nigel_karunaratne.interpreter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.nigel_karunaratne.ast.expressions.*;
+import com.nigel_karunaratne.ast.functions.*;
+import com.nigel_karunaratne.ast.functions.native_functions.*;
 import com.nigel_karunaratne.ast.statements.*;
 import com.nigel_karunaratne.environment.Environment;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
@@ -12,14 +15,22 @@ import com.nigel_karunaratne.tokens.TokenType;
 
 public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Void> {
 
-    private Environment baseEnvironment = new Environment();
+    public Environment globalsEnvironment = new Environment();
+    private Environment baseEnvironment = globalsEnvironment; //TODO - remove this : new Environment();
+
+    //Used to define global functions
+    public Interpreter() {
+        globalsEnvironment.defineValue("printN", new PrintNoNewlineFunction());
+        globalsEnvironment.defineValue("print", new PrintFunction());
+        globalsEnvironment.defineValue("input", new GetInputFunction());
+    }
 
     public void interpretExprTree(ExprNode exp) {
         try {
             Object value = evaluateExpr(exp);
             ErrorHandler.debugOutput("VALUE EVALUATED -> " + value.toString() + " : " + (value.getClass().getName()));
         } catch (RuntimeError e) {
-            
+            //TODO - look into here
         }
     }
 
@@ -38,7 +49,7 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
     @Override
     public Void visitExprStmt(ExprStmtNode stmt) {
         Object o = evaluateExpr(stmt.expr);
-        ErrorHandler.debugOutput(o.toString()); //TODO - remove 'o' and just have the evalExpr
+        // ErrorHandler.debugOutput(o.toString()); //TODO - remove 'o' and just have the evalExpr
         return null;
     }
 
@@ -56,12 +67,30 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
 
     @Override
     public Void visitBlockStmt(BlockStmtNode stmt) {
+        // Environment previousEnvironment = baseEnvironment;
+        // Environment blockEnvironment = new Environment(baseEnvironment);
+        // try {
+        //     baseEnvironment = blockEnvironment;
+
+        //     for (StmtNode content : stmt.contents) {
+        //         content.accept(this);
+        //     }
+        // }
+        // finally {
+        //     baseEnvironment = previousEnvironment;
+        // }
+
+        // return null;
+        executeBlockStmt(stmt.contents, new Environment(baseEnvironment));
+        return null;
+    }
+
+    public void executeBlockStmt(List<StmtNode> stmts, Environment blockEnvironment) {
         Environment previousEnvironment = baseEnvironment;
-        Environment blockEnvironment = new Environment(baseEnvironment);
         try {
             baseEnvironment = blockEnvironment;
 
-            for (StmtNode content : stmt.contents) {
+            for (StmtNode content : stmts) {
                 content.accept(this);
             }
         }
@@ -69,7 +98,7 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
             baseEnvironment = previousEnvironment;
         }
 
-        return null;
+        return;
     }
 
     @Override
@@ -90,6 +119,22 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
         }
 
         return null;
+    }
+
+    @Override
+    public Void visitFunctionDefStmt(FunctionDefStmtNode stmt) {
+        CallableFunction function = new CallableFunction(stmt, baseEnvironment);
+        baseEnvironment.defineValue(stmt.name.value.toString(), function);
+        return null;
+    }
+
+    @Override
+    public Void visitReturnStmt(ReturnStmtNode stmt) {
+        Object value = null; //default return value
+        if(stmt.value != null)
+            value = evaluateExpr(stmt.value);
+        
+        throw new ReturnFromFunction(value);
     }
 
     //ANCHOR - Expression Visitor Methods
@@ -126,23 +171,23 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
                 //TODO - Check Addition
                 enforceNumberOrStringOperands(expr.operator, left, right);
                 if(isString(left) || isString(right))
-                    return (String)left + (String)right;
-                if(isFloat(left) || isFloat(right))
-                    return (Float)left + (float)right;
+                    return returnStringVersion(left) + returnStringVersion(right);
+                if(isDouble(left) || isDouble(right))
+                    return convertNumToDouble(left) + convertNumToDouble(right);
                 else
                     return (int)left + (int)right;
             case MINUS:
                 //TODO - Check
                 enforceNumberOperands(expr.operator, left, right);
-                if(isFloat(left) || isFloat(right))
-                    return (double)left - (double)right;
+                if(isDouble(left) || isDouble(right))
+                    return convertNumToDouble(left) - convertNumToDouble(right);
                 else
                     return (int)left - (int)right;
             case MUL:
                 enforceNumberOperands(expr.operator, left, right);
                 //TODO - Check Multiplication
-                if(isFloat(left) || isFloat(right))
-                    return (double)left * (double)right;
+                if(isDouble(left) || isDouble(right))
+                    return convertNumToDouble(left) * convertNumToDouble(right);
                 else
                     return (int)left * (int)right;
             case DIV:
@@ -154,15 +199,15 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
                     throw ErrorHandler.throwRuntimeError(expr.operator, "Righthand side of division cannot be zero.");
                 }
 
-                if(isFloat(left) || isFloat(right))
-                    return (double)left / (double)right;
+                if(isDouble(left) || isDouble(right))
+                    return convertNumToDouble(left) / convertNumToDouble(right);
                 else
                     return (int)left / (int)right;
             case MOD:
                 //TODO - Check Modulo
                 enforceNumberOperands(expr.operator, left, right);
-                if(isFloat(left) || isFloat(right))
-                    return (double)left % (double)right;
+                if(isDouble(left) || isDouble(right))
+                    return convertNumToDouble(left) % convertNumToDouble(right);
                 else
                     return (int)left % (int)right;
             default:
@@ -182,7 +227,7 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
                 return !determineTruthy(right);
             case MINUS:
                 enforceNumberOperands(expr.operator, right);
-                if(isFloat(right))
+                if(isDouble(right))
                     return -((double)right);
                 else
                     return-((int)right);
@@ -246,7 +291,48 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
         return null;
     }
 
+    @Override
+    public Object visitCallFunExpr(CallFnExprNode expr) {
+        Object callee = evaluateExpr(expr.callee);
+
+        List<Object> args = new ArrayList<>();
+        for (ExprNode arg : expr.args) {
+            args.add(evaluateExpr(arg));
+        }
+
+        if(!(callee instanceof CallableInterface))
+            ErrorHandler.throwRuntimeError(expr.parenthesis, "Cannot call anything other than a function.");
+            
+        CallableInterface function = (CallableInterface)callee;
+        if(args.size() != function.expectedArgCount())
+            ErrorHandler.throwRuntimeError(expr.parenthesis, "Expected " + function.expectedArgCount() + " args, got " + args.size() +" instead.");
+        
+        return function.call(this, args);
+    }
+
     //ANCHOR - Helper methods
+
+    private String returnStringVersion(Object o) {
+        if(o instanceof Integer)
+            return ((Integer)o).toString();
+        if(o instanceof Double)
+            return ((Double)o).toString();
+        if(o instanceof String)
+            return ((String)o);
+        return o.toString();
+    }
+
+    private Double convertNumToDouble(Object o) {
+        if(o instanceof Integer)
+            return Double.valueOf(((Integer)o).intValue());
+        else
+            return ((Double)o);
+    }
+
+    // private Double returnDoubleVersion(Object o) {
+    //     if(o instanceof Integer)
+    //         return Double.// ((Integer)o)
+    // }
 
     //All non-zero numbers + non-null objects are true. Booleans should evaluate as themselves.
     private boolean determineTruthy(Object obj) {
@@ -268,7 +354,7 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
         return l.equals(r);
     }
 
-    private boolean isFloat(Object obj) {
+    private boolean isDouble(Object obj) {
         return (obj instanceof Double); //!!!!!!!!!!!OR instance of Float???????????????
     }
 
