@@ -20,8 +20,11 @@ public class App {
 
     public static final Interpreter interpreter = new Interpreter();
 
+    public static Scanner userInputScanner;
+
     public static void main(String[] args) throws Exception {
         ErrorHandler.debugOutput("Main App started.");
+        userInputScanner = new Scanner(System.in);
 
         if(args.length >= 1) {
             //Interpret a single file
@@ -44,19 +47,20 @@ public class App {
         // String inputString = "var variable = 1 + 3 / 4;\nvar stringVar123 = \"Hello World! 123454321;\";   \nvar a = \"oonga\";";
         // String inputString = "var x = 3 + 2 / 4 * 5 % 2;\nvar y = \"Hello World\";\nif(x >= 3) y = \"hello worl\";";
         // String inputString = "(2 + 4 / 3) >= 1 == null;";
-        String inputString = "var i = 0; var j = 50; while(i < 5) {i = i + 1; j = j - i;}";
+        // String inputString = "var y = \"Hello\"; func retThree(){var x = input(); if(x == \"hello\") {return true;} else {return false;} }\nprint(retThree());";
 
-        System.out.println("Lexing: \n" + inputString + "\n");
+        // System.out.println("Lexing: \n" + inputString + "\n");
 
-        Lexer lexer = new Lexer();
-        lexer.LexInput(inputString);
+        // Lexer lexer = new Lexer();
+        // lexer.LexInput(inputString);
 
-        Parser parser = new Parser(lexer.getGeneratedTokens());
+        // Parser parser = new Parser(lexer.getGeneratedTokens());
 
-        List<StmtNode> stmts = parser.parse();
+        // List<StmtNode> stmts = parser.parse();
 
-        interpreter.interpretStmtList(stmts);
+        // interpreter.interpretStmtList(stmts);
 
+        userInputScanner.close();
         ErrorHandler.debugOutput("Main App ended.");
     }
 
@@ -65,21 +69,37 @@ public class App {
         // Lexer lexer = new Lexer();
         // Parser parser;
 
-        Scanner scanner = new Scanner(System.in);
+        System.out.println("Java-Based Interpreted Language\nType help to see built-in commands\n");
+        // Scanner scanner = new Scanner(System.in);
 
 
         while(!shouldExit) {
             System.out.print(">>> ");
-            String input = scanner.nextLine();
+            String input = userInputScanner.nextLine();//scanner.nextLine();
 
-            if(input == null) 
+            if(input == null || input.equals("exit")) {
                 break; //TODO- make work
+            }
+            
+            if(input.equals("help")) {
+                System.out.println("REPL commands:");
+                System.out.println("exit\tExits the current REPL session");
+                System.out.println("help\tDisplays help message");
+                System.out.println("\nBuilt-in functions:");
+                System.out.println("print()   Prints to the screen");
+                System.out.println("printN()  Prints to the screen (omits the final newline)");
+                System.out.println("input()   Waits for the user to input a line, returns the line");
 
+                continue;
+            }
+            
             runCycle(input);
 
             hadError = false;
             
         }
+
+        // scanner.close();
     }
 
     static void runCycle(String input) {
