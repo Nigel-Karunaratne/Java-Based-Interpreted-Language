@@ -248,14 +248,25 @@ public class Lexer {
         String returnVal = builder.toString();
         if(isFloat) {
             //NOTE - FOUND FLOAT
-                // System.out.print(returnVal + "|");
-            tokens.add(new Token(TokenType.DOUBLE, Double.parseDouble(returnVal), line, column));
-                
+            try {
+                Double val = Double.parseDouble(returnVal);
+                tokens.add(new Token(TokenType.DOUBLE, val, line, column));
+            } catch (NumberFormatException e) {
+                ErrorHandler.reportLexerError(line, column, "Double value " + returnVal + " is too large.");
+                endLexerEarly();
+                return;
+            }                
         }
         else {
             //NOTE - FOUND INTEGER
-                // System.out.print(returnVal + "|");
-            tokens.add(new Token(TokenType.INT, Integer.parseInt(returnVal), line, column));
+            try {
+                Integer val = Integer.parseInt(returnVal);
+                tokens.add(new Token(TokenType.INT, val, line, column));
+            } catch (NumberFormatException e) {
+                ErrorHandler.reportLexerError(line, column, "Integer value " + returnVal + " is too large.");
+                endLexerEarly();
+                return;
+            }
         }
         setCurrentToNextIfExists();
     }
