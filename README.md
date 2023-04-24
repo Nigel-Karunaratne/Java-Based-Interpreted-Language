@@ -3,9 +3,9 @@
 
 > README.md is incomplete
 
-> For Comp Sci 2 (Spring 2023) Honors Project.
+> This is a CMPSC-F132-B (Spring 2023) Honors Project.
 
-This project involved creating an interpreter for a fictional, made-up language. 
+This project involved creating an interpreter for a fictional, made-up language.
 
 The purpose of this project was to understand how computers actually run computer code.
 
@@ -34,3 +34,43 @@ The language itself supports:
 - Functions
 - Simple control flow structures (if-else statements and while loops)
 - Native functions for reading user input and printing to the screen
+
+---
+Example statements/programs:  
+```
+var x = 5;
+```
+
+```
+var str = "Hello World!";
+print(str);
+```
+
+```
+print(3.0 / 2.0);
+print(3 / 2);
+print(2 + 1 >= 5 - 4);
+print("left" == "Left");
+print("right" == "right");
+```
+
+```
+func fib(n) {
+    if(n == 0) {return 0;}
+    if(n == 1) {return 1;}
+
+    return fib(n-1) + fib(n-2);
+}
+
+var inp = toNum(inputM("Enter an integer: "));
+print("fib(" + inp + ") is " + fib(inp));
+```
+
+```
+var i = 10;
+while(i >= 0) {
+    print("i is currently " + i);
+    i = i - 1;
+}
+print("Finished!");
+```
