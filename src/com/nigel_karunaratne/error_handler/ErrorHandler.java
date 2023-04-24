@@ -35,6 +35,12 @@ public final class ErrorHandler {
         return new RuntimeError();
     }
 
+    public static ParsingError throwParsingError(Token currentToken, String errorMessage) {
+        ErrorHandler.outputException(errorMessage, currentToken.line, currentToken.column);
+        JBIL_Main.hadError = true;
+        return new ParsingError();
+    }
+
     public static void reportLexerError(int line, int col, String errorMessage) {
         //nothing needs to be thrown, just reported and aborted.
         ErrorHandler.outputException(errorMessage, line, col);

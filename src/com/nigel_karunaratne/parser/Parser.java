@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.nigel_karunaratne.tokens.Token;
 import com.nigel_karunaratne.tokens.TokenType;
-import com.nigel_karunaratne.JBIL_Main;
 import com.nigel_karunaratne.ast.expressions.*;
 import com.nigel_karunaratne.ast.statements.*;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
@@ -327,7 +326,8 @@ public class Parser {
         }
 
         //Nothing found -> throw error
-        throw throwParsingError(getCurrentToken(), "Expression was expected, none was found");
+        // throw throwParsingError(getCurrentToken(), "Expression was expected, none was found");
+        throw ErrorHandler.throwParsingError(getCurrentToken(), "Expression was expected, none was found");
     }
 
     //If a parsing error occurs, use this to wait for a new statement (TODO), and then resume parsing.
@@ -407,17 +407,19 @@ public class Parser {
         return getCurrentToken().type.equals(TokenType.EOF); //or position > size of list?
     }
 
-    private Token consumeCurrentToken(TokenType type, String errorMessage) { //TODO - rename
+    //consumes an expected token (advances position). if not expected token, throw error
+    private Token consumeCurrentToken(TokenType type, String errorMessage) {
         if(isCurrentTypeEqualTo(type))
             return advancePosition();
 
-        throw throwParsingError(getCurrentToken(), errorMessage);
+        // throw throwParsingError(getCurrentToken(), errorMessage);
+        throw ErrorHandler.throwParsingError(getCurrentToken(), errorMessage);
 
     }
 
-    private ParsingError throwParsingError(Token currentToken, String errorMessage) {
-        ErrorHandler.outputException(errorMessage, currentToken.line, currentToken.column);
-        JBIL_Main.hadError = true;
-        return new ParsingError();
-    }
+    // private ParsingError throwParsingError(Token currentToken, String errorMessage) {
+    //     ErrorHandler.outputException(errorMessage, currentToken.line, currentToken.column);
+    //     JBIL_Main.hadError = true;
+    //     return new ParsingError();
+    // }
 }
