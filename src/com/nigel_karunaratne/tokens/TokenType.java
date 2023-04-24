@@ -16,6 +16,7 @@ public enum TokenType {
     MUL,
     DIV,
     MOD,
+    POWER,
 
     EQUALS,
     GREATER_THAN_EQUAL,

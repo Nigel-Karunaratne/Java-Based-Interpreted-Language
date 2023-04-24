@@ -51,6 +51,7 @@ public class Lexer {
         doubleOperatorMap.put("!=", TokenType.NOT_EQUAL);
         doubleOperatorMap.put("||", TokenType.OR);
         doubleOperatorMap.put("&&", TokenType.AND);
+        doubleOperatorMap.put("**", TokenType.POWER);
     }
 
     private ArrayList<Token> tokens = new ArrayList<>();

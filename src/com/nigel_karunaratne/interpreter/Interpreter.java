@@ -215,6 +215,13 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
                     return convertNumToDouble(left) % convertNumToDouble(right);
                 else
                     return (int)left % (int)right;
+            case POWER:
+                //TODO - Check power
+                enforceNumberOperands(expr.operator, left, right);
+                if(isDouble(left) || isDouble(right))
+                    return Math.pow(convertNumToDouble(left), convertNumToDouble(right));
+                else
+                    return (int)Math.pow((int)left, (int)right);
             default:
                 break;
         }

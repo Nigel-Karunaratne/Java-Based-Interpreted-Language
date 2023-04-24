@@ -245,10 +245,10 @@ public class Parser {
         return activeExpression;
     }
 
-    //* factor : 		unary ( ("/" | "*" | "%") unary)*
+    //* factor : 		unary ( ("/" | "*" | "%" | "**") unary)*
     private ExprNode factor() {
         ExprNode activeExpression = unary();
-        while(matchTokenType(TokenType.DIV, TokenType.MUL, TokenType.MOD)) {
+        while(matchTokenType(TokenType.DIV, TokenType.MUL, TokenType.MOD, TokenType.POWER)) {
             Token operator = getPreviousToken();
             ExprNode right = unary();
 
