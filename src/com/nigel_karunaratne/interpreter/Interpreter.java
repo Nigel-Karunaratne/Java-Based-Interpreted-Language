@@ -26,6 +26,7 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
         globalsEnvironment.defineValue("printN", new PrintNoNewlineFunction());
         globalsEnvironment.defineValue("print", new PrintFunction());
         globalsEnvironment.defineValue("input", new GetInputFunction());
+        globalsEnvironment.defineValue("inputM", new GetInputWithMessageFunction());
     }
 
     public void interpretExprTree(ExprNode exp) {
