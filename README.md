@@ -9,7 +9,7 @@ This project involved creating an interpreter for a fictional, made-up language.
 
 The purpose of this project was to understand how computers actually run computer code.
 
-This project used the book [Crafting Interpreters](http://craftinginterpreters.com) (by Bob Nystrom) as a major reference for understanding how an interpreter works and why each piece is needed. The parser's grammer used in the book was also used here.
+This project used the book [Crafting Interpreters](http://craftinginterpreters.com) (by Robert Nystrom) as a major reference for understanding how an interpreter works and why each piece is needed. The parser's grammer used in the book was also used here.
 
 ---
 This interpreter uses 4 distinct "modules":
@@ -20,16 +20,17 @@ This interpreter uses 4 distinct "modules":
 
 ---
 The language application supports two modes:
-1. Running the app normally, this opens up a REPL where code can be typed.
-2. Running the app and passing in a file, this interprets the file and displays output on screen.
+1. Running the program _without_ arguments, this opens up a REPL where code can be typed.
+    - The REPL is currently limited to typing one line at a time (a statement cannot span more than one line).
+2. Running the program and _passing in a file_, this interprets the file and displays output on screen.
 
 In the REPL, two commands are supported:
 - __help__: this displays a help page detailing these commands + some native functions
 - __exit__: this quits the REPL
 
 The language itself supports:
-- dynamically typed variables
+- Dynamically typed variables
 - integer, double, and boolean data types (and null)
-- functions
-- simple control flow structures (if-else statements and while loops)
-- native functions for reading user input and printing to the screen
+- Functions
+- Simple control flow structures (if-else statements and while loops)
+- Native functions for reading user input and printing to the screen
