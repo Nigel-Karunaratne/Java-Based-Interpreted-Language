@@ -65,8 +65,8 @@ public class Lexer {
 
     public void LexInput(String inputText) {
 
-        line = 0;
-        column = 0;
+        line = 1;
+        column = 1;
         input = inputText.toCharArray();
         currentInputIndex = 0;
         tokens = new ArrayList<>(); //REVIEW - Estimate default size of list using size of input? Could reduce the amount of time spent resizing internal array?
@@ -160,13 +160,13 @@ public class Lexer {
     private void setCurrentToNext() {
         //TODO - Should throw error if next does not exist
         currentInputIndex++;
-        line++;
+        column++;
         current = input[currentInputIndex];
     }
 
     private void setCurrentToNextIfExists() {
         currentInputIndex++;
-        line++;
+        column++;
         if(currentInputIndex < input.length)
             current = input[currentInputIndex];
     }
