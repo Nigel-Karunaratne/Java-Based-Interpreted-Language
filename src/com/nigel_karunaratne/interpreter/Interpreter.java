@@ -13,7 +13,6 @@ import com.nigel_karunaratne.environment.Environment;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
 import com.nigel_karunaratne.error_handler.RuntimeError;
 import com.nigel_karunaratne.tokens.Token;
-import com.nigel_karunaratne.tokens.TokenType;
 
 public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Void> {
 
@@ -52,8 +51,9 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
     //ANCHOR - Statement Visitor Methods
     @Override
     public Void visitExprStmt(ExprStmtNode stmt) {
-        Object o = evaluateExpr(stmt.expr);
-        // ErrorHandler.debugOutput(o.toString()); //TODO - remove 'o' and just have the evalExpr
+        evaluateExpr(stmt.expr);
+        // Object o = evaluateExpr(stmt.expr);
+        // ErrorHandler.debugOutput(o.toString());
         return null;
     }
 
@@ -199,7 +199,6 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
                 enforceNumberOperands(expr.operator, left, right);
                 //check for div by zero
                 if((right instanceof Double && (double)right == 0) || (right instanceof Integer && (int)right == 0)) {
-                    //TODO - throw div by zero error
                     throw ErrorHandler.throwRuntimeError(expr.operator, "Righthand side of division cannot be zero.");
                 }
 

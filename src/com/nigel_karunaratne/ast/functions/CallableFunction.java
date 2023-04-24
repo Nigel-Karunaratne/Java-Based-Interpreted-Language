@@ -19,7 +19,7 @@ public class CallableFunction implements CallableInterface {
     public Object call(Interpreter interpreter, List<Object> args) {
         Environment environment = new Environment(closure);
         for (int i = 0; i < declaration.parameters.size(); i++) {
-            environment.defineValue(declaration.parameters.get(i).value.toString(), args.get(i)); //TODO - is token.value correct?
+            environment.defineValue(declaration.parameters.get(i).value.toString(), args.get(i));
         }
 
         try {
