@@ -3,7 +3,6 @@ package com.nigel_karunaratne.lexer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.nigel_karunaratne.JBIL_Main;
 import com.nigel_karunaratne.error_handler.ErrorHandler;
 import com.nigel_karunaratne.tokens.Token;
 import com.nigel_karunaratne.tokens.TokenType;
@@ -268,7 +267,9 @@ public class Lexer {
         while(current != '"') {
             builder.append(current);
             if(!peekNextExists()) {
-                //TODO - THROW ERROR
+                ErrorHandler.reportLexerError(line, column, "Expected \", but end of file reached.");
+                endLexerEarly();
+                return;
             }
             setCurrentToNext();
         }
@@ -340,7 +341,6 @@ public class Lexer {
 
 
         //If execution reaches here, we have encountered an invalid character. Throw Error
-        //TODO - THROW ERROR
         ErrorHandler.reportLexerError(line, column, "There's an invalid character.");
         endLexerEarly();
         return;
