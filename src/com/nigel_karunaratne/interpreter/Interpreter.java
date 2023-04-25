@@ -176,10 +176,13 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
             //arithmetic
             case ADD:
                 //TODO - Check Addition
-                enforceNumberOrStringOperands(expr.operator, left, right);
-                if(isString(left) || isString(right))
+                enforceNumberStringOrFunctionOperands(expr.operator, left, right);
+                if(isString(left) || isString(right) || (isFunction(left) ^ isFunction(right)))
                     return returnStringVersion(left) + returnStringVersion(right);
-                if(isDouble(left) || isDouble(right))
+
+                //you can only add functions via strings
+                enforceNumberOrStringOperands(expr.operator, left, right);
+                if((isDouble(left) || isDouble(right)))
                     return convertNumToDouble(left) + convertNumToDouble(right);
                 else
                     return (int)left + (int)right;
@@ -326,8 +329,10 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
             ErrorHandler.throwRuntimeError(expr.parenthesis, "Cannot call anything other than a function.");
             
         CallableInterface function = (CallableInterface)callee;
-        if(args.size() != function.expectedArgCount())
+        if(args.size() != function.expectedArgCount()) {
             ErrorHandler.throwRuntimeError(expr.parenthesis, "Expected " + function.expectedArgCount() + " args, got " + args.size() +" instead.");
+            return null; //so that we don't even try calling the function
+        }
         
         return function.call(this, args);
     }
@@ -355,6 +360,8 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
             return ((Double)o).toString();
         if(o instanceof String)
             return ((String)o);
+        if(o instanceof CallableFunction)
+            return ((CallableFunction)o).toString();
         return o.toString();
     }
 
@@ -402,6 +409,10 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
         return (obj instanceof Double) || (obj instanceof Integer);
     }
 
+    private boolean isFunction(Object obj) {
+        return (obj instanceof CallableFunction);
+    }
+
     private double getComparasonValue(Object obj) {
         //for >, <, >=, <= (no booleans can be accepted)
         //strings should be compared on length (returned as double)
@@ -432,6 +443,13 @@ public class Interpreter implements ExprNodeVisitor<Object>, StmtNodeVisitor<Voi
     private void enforceNumberOrStringOperands(Token operatorToken, Object... operands) {
         for (Object object : operands) {
             if(!isNumber(object) && !isString(object))
+                throw ErrorHandler.throwRuntimeError(operatorToken, "The operand must be either a number or a string");
+        }
+    }
+
+    private void enforceNumberStringOrFunctionOperands(Token operatorToken, Object... operands) {
+        for (Object object : operands) {
+            if(!isNumber(object) && !isString(object) && !isFunction(object))
                 throw ErrorHandler.throwRuntimeError(operatorToken, "The operand must be either a number or a string");
         }
     }
