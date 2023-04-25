@@ -271,6 +271,7 @@ public class Lexer {
         //The resulting string should not contain any quotation marks
 
         String returnVal = builder.toString();
+        returnVal = returnVal.replace("\\n", "\n").replace("\\t", "\t");
         //NOTE - FOUND STRING
         tokens.add(new Token(TokenType.STRING, returnVal, line, column));
 
