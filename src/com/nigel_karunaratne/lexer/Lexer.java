@@ -14,8 +14,6 @@ public class Lexer {
     // public final char[] singleOperators = {'!', '<', '>', '=', '+', '-', '/', '*', '%'};
     // public final String[] doubleOperators = {"==", "<=", ">=", "!=", "||", "&&"};
 
-    // HashMap<String, TokenType> mws = Map.ofEntries();
-
     final static HashMap<String,TokenType> reservedMap = new HashMap<>();
     static {
         reservedMap.put("var", TokenType.VAR_DEC);
@@ -70,7 +68,7 @@ public class Lexer {
         column = 1;
         input = inputText.toCharArray();
         currentInputIndex = 0;
-        tokens = new ArrayList<>(); //REVIEW - Estimate default size of list using size of input? Could reduce the amount of time spent resizing internal array?
+        tokens = new ArrayList<>(100); //REVIEW - Estimate default size of list using size of input? Could reduce the amount of time spent resizing internal array?
 
         while(currentInputIndex < input.length) {
             current = getCurrent();
@@ -114,25 +112,21 @@ public class Lexer {
 
             else if(current == '(') {
                 tokens.add(new Token(TokenType.LPAREN, '(', line, column));
-                    //TODO - Cleanup System.out.print("(|");
                 setCurrentToNextIfExists();
             }
 
             else if(current == ')') {
                 tokens.add(new Token(TokenType.RPAREN, ')', line, column));
-                    // System.out.print(")|");
                 setCurrentToNextIfExists();
             }
 
             else if(current == '{') {
                 tokens.add(new Token(TokenType.LBRACE, '{', line, column));
-                    // System.out.print("{|");
                 setCurrentToNextIfExists();
             }
 
             else if(current == '}') {
                 tokens.add(new Token(TokenType.RBRACE, '}', line, column));
-                    // System.out.print("}|");
                 setCurrentToNextIfExists();
             }
 
@@ -196,25 +190,13 @@ public class Lexer {
 
         setCurrentToNextIfExists();
         String returnVal = builder.toString();
-        
-        //Check if returnVal is in reserved
-        // for (String string : reserved) {
-        //     if (returnVal.equals(string)) {
-        //         //NOTE - FOUND KEYWORD ->  need to check if it is a bool value
-        //             System.out.print(returnVal + "|");
-
-        //         return;
-        //     }
-        // }
         if(reservedMap.containsKey(returnVal)) {
             //NOTE - FOUND KEYWORD
-                // System.out.print(returnVal + "|");
             tokens.add(new Token(reservedMap.get(returnVal), returnVal, line, column));
             return;
         }
 
-        //NOTE - FOUND VARIABLE (add to symbol table?)
-            // System.out.print(returnVal + "|");
+        //NOTE - FOUND VARIABLE
         tokens.add(new Token(TokenType.IDENTIFIER, returnVal, line, column));
     }
     
@@ -290,7 +272,6 @@ public class Lexer {
 
         String returnVal = builder.toString();
         //NOTE - FOUND STRING
-            // System.out.print(returnVal + "|");
         tokens.add(new Token(TokenType.STRING, returnVal, line, column));
 
             setCurrentToNextIfExists();
@@ -298,7 +279,6 @@ public class Lexer {
 
     private void handleSemicolon() {
         //NOTE - FOUND SEMICOLON
-            // System.out.print(";" + "|");
         tokens.add(new Token(TokenType.ENDLINE, ';', line, column));
         setCurrentToNextIfExists();
     }
@@ -307,21 +287,8 @@ public class Lexer {
         if(peekNextExists() && !Character.isWhitespace(peekNext())) {
             //could be double operator, need to check first
             String rval = "" + current + peekNext();
-            // for (String string : doubleOperators) {
-            //     if (rval.equals(string)) {
-            //         //NOTE - DOUBLE OPERATOR FOUND
-            //             System.out.print(rval + "|");
-                    
-            //         //Twice due to a double operator
-            //         currentInputIndex+=1;
-            //         setCurrentToNextIfExists();
-            //         return;
-            //     }
-            // }
-
             if(doubleOperatorMap.containsKey(rval)) {
                 //NOTE - DOUBLE OPERATOR FOUND
-                    // System.out.print(rval + "|");
                 tokens.add(new Token(doubleOperatorMap.get(rval), rval, line, column));
                     
                 //Twice due to a double operator
@@ -331,20 +298,8 @@ public class Lexer {
             }
         }
         //Not double operator, could be single
-
-        // for (char character : singleOperators) {
-        //     if (current == character) {
-        //         //NOTE - SINGLE OPERATOR FOUND
-        //             System.out.print("" + current + "|");
-
-        //         setCurrentToNextIfExists();
-        //         return;
-        //     }
-        // }
-
         if(singleOperatorMap.containsKey("" + current)) {
             //NOTE - SINGLE OPERATOR FOUND
-                // System.out.print("" + current + "|");
             tokens.add(new Token(singleOperatorMap.get("" + current), "" + current, line, column));
                 
             setCurrentToNextIfExists();
