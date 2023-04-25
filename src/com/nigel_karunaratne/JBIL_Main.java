@@ -84,11 +84,12 @@ public class JBIL_Main {
                 System.out.println("exit\tExits the current REPL session");
                 System.out.println("help\tDisplays help message");
                 System.out.println("\nBuilt-in functions:");
-                System.out.println("print(obj)    Prints to the screen");
-                System.out.println("printN(obj)   Prints to the screen (omits the final newline)");
+                System.out.println("print(obj)    Prints obj to the screen");
+                System.out.println("printN(obj)   Prints obj to the screen (omits the final newline)");
                 System.out.println("input()       Waits for the user to input a line, returns the line");
                 System.out.println("inputN(msg)   Prints the message, then acts the same as input()");
                 System.out.println("toNum(obj)    Tries to convert obj (usually a string) into a number (double or int). Returns null if it fails");
+                System.out.println("toStr(obj)    Returns the string representation of the object.");
 
                 continue;
             }
